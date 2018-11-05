@@ -1,0 +1,107 @@
+#luaload
+
+> A Node.js library for concatenating and loading lua script files in redis
+
+Please, refer to the [Installation](#Installation), [Usage](#usage), [API](#api), [Requirements](#requirements) and [License](#license) sections for more information.
+
+## Installation <a name="installation"></a>
+
+```bash
+npm install luaload
+```
+
+## Usage <a name="usage"></a>
+
+### ./usage.js
+
+```javascript
+const luaload = require('luaload')
+const redis = require('redis')
+
+const client = redis.createClient()
+const sourceDirectory = path.join(__dirname, './lua')
+const mappings = {
+    ninja_turtles: [
+        'leonardo',
+        'michelangelo',
+        'donatello',
+        'raphael',
+        'list_ninja_turtles'
+    ],
+}
+const shouldOutput = true
+
+const loader = luaload(client, sourceDirectory, mappings, shouldOutput)
+
+loader.load('list_ninja_turtles', (err, sha) => {
+    if (err) {
+        throw err
+    }
+
+    client.evalsha(sha, 0, (err, reply) => {
+        if (err) {
+            throw err
+        }
+
+        console.log(reply) // ['donatello', 'leonardo', 'michelangelo', 'raphael']
+    })
+})
+```
+
+### ./lua/donatello.lua
+
+```lua
+local function donatello()
+    return 'Donatello'
+end
+```
+
+### ./lua/leonardo.lua
+
+```lua
+local function leonardo()
+    return 'Leonardo'
+end
+```
+
+### ./lua/michelangelo.lua
+
+```lua
+local function michelangelo()
+    return 'Michelangelo'
+end
+```
+
+### ./lua/raphael.lua
+
+```lua
+local function raphael()
+    return 'Raphael'
+end
+```
+
+### ./lua/list_ninja_turtles.lua
+
+```lua
+local return_value = {}
+
+table.insert(return_value, donatello())
+table.insert(return_value, leonardo())
+table.insert(return_value, michelangelo())
+table.insert(return_value, raphael())
+
+return return_value
+```
+
+## API <a name="api"></a>
+
+{{>main}}
+
+## Requirements <a name="requirements"></a>
+
+* Node.js 6+
+* Redis 2.8.9+
+
+## License <a name="license"></a>
+
+This project is [MIT-licensed](LICENSE)
